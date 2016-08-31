@@ -23,7 +23,7 @@
         </activity>
 
         <service
-            android:name=".GPSLocation"
+            android:name=".LocationManag"
             android:enabled="true"
             android:exported="true"></service>
     </application>

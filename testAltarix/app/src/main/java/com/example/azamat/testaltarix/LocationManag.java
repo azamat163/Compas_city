@@ -1,62 +1,81 @@
 package com.example.azamat.testaltarix;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.widget.Toast;
 
-public class GPSLocation extends Service implements LocationListener {
+public class LocationManag extends Service implements LocationListener {
+
 
     private Context context;
-
-    boolean isGPSEnabled = false;
-    boolean isNetworkEnabled = false;
+    private String provider;
 
     boolean canGetLocation = false;
 
-    Location location; // location
+    android.location.Location location; // location
     double latitude; // latitude
     double longitude; // longitude
 
     // The minimum distance to change Updates in meters
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 400; // 10 meters
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 400;
 
     // The minimum time between updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 1; // 1 minute
 
-    // Declaring a Location Manager
-    protected LocationManager locationManager;
+    // Declaring a LocationManag Manager
+    protected android.location.LocationManager locationManager;
 
-    public GPSLocation(Context context) {
+    public LocationManag(Context context) {
         this.context = context;
         getLocation();
     }
 
-    public Location getLocation() {
-        try {
-            locationManager = (LocationManager)
-                    getSystemService(context.LOCATION_SERVICE);
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-                return;
-            }
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+    public void getLocation() {
+        if ( Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission( context, android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission( context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
         }
 
-        return location;
+        try {
+            locationManager = (android.location.LocationManager)
+                    this.getSystemService(context.LOCATION_SERVICE);
+            Criteria criteria = new Criteria();
+            provider = locationManager.getBestProvider(criteria, false);
+           location = locationManager.getLastKnownLocation(provider);
+
+            // Initialize the location fields
+            if (location != null) {
+                System.out.println("Provider " + provider + " has been selected.");
+                onLocationChanged(location);
+                latitude = location.getLatitude();
+                longitude = location.getLongitude();
+                Log.d("Lantitude", String.valueOf(latitude));
+                Log.d("Longitude", String.valueOf(longitude));
+            } else {
+                Toast.makeText(context,"LocationManag not available",Toast.LENGTH_LONG).show();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -67,7 +86,6 @@ public class GPSLocation extends Service implements LocationListener {
         throw new UnsupportedOperationException("Not yet implemented");
 
     }
-
 
     public boolean canGetLocation() {
         return this.canGetLocation;
@@ -95,7 +113,7 @@ public class GPSLocation extends Service implements LocationListener {
     }
 
     @Override
-    public void onLocationChanged(Location location) {
+    public void onLocationChanged(android.location.Location location) {
     }
 
     @Override

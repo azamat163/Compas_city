@@ -1,6 +1,5 @@
 package com.example.azamat.testaltarix;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -52,15 +51,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Toast.makeText(getApplicationContext(),"You Clicked "+names[i],Toast.LENGTH_SHORT).show();
-                GPSLocation gps = new GPSLocation(MainActivity.this);
-                if(gps.canGetLocation()){
+                LocationManag loc = new LocationManag(MainActivity.this);
+                if(loc.canGetLocation()){
+                    loc.getLocation();
 
-                    Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
                 }else{
                     // can't get location
                     // GPS or Network is not enabled
                     // Ask user to enable GPS/network in settings
-                    gps.showSettingsAlert();
+                    loc.showSettingsAlert();
                 }
 
             }
