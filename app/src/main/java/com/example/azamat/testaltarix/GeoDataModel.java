@@ -7,14 +7,14 @@ import java.io.Serializable;
 /**
  * Created by azz on 06.09.16.
  */
-public class geosearch{
+public class GeoDataModel {
 
 
     public String title;
     public Double dist;
     public Integer image;
 
-    geosearch(){
+    GeoDataModel(){
 
     }
 
@@ -22,11 +22,11 @@ public class geosearch{
      this.title = title;
    }
 
-   public void setDist(double dist) {
+    public void setDist(double dist) {
        this.dist = dist;
    }
 
-   public void setImage(Integer image) {
+    public void setImage(Integer image) {
        this.image = image;
    }
 

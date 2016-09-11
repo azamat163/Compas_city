@@ -41,11 +41,8 @@ public class LocationManag extends Service implements LocationListener {
 
 
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
+    private static final long MIN_TIME_BW_UPDATES = 0;
 
-
-    private static final long MIN_TIME_BW_UPDATES = 0; // 1 minute
-
-    // Declaring a LocationManag Manager
     protected android.location.LocationManager locationManager;
 
     public LocationManag(Context context) {
@@ -65,19 +62,15 @@ public class LocationManag extends Service implements LocationListener {
             locationManager = (LocationManager) context
                     .getSystemService(LOCATION_SERVICE);
 
-            // getting GPS status
             isGPSEnabled = locationManager
                     .isProviderEnabled(LocationManager.GPS_PROVIDER);
 
-            // getting network status
             isNetworkEnabled = locationManager
                     .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
             if (!isGPSEnabled && !isNetworkEnabled) {
-                // no network provider is enabled
             } else {
                 this.canGetLocation = true;
-                // First get location from Network Provider
                 if (isNetworkEnabled) {
                     locationManager.requestLocationUpdates(
                             LocationManager.NETWORK_PROVIDER,
@@ -93,7 +86,6 @@ public class LocationManag extends Service implements LocationListener {
                         }
                     }
                 }
-                // if GPS Enabled get lat/long using GPS Services
                 if (isGPSEnabled) {
                     if (location == null) {
                         locationManager.requestLocationUpdates(
@@ -136,19 +128,15 @@ public class LocationManag extends Service implements LocationListener {
             latitude = location.getLatitude();
         }
 
-        // return latitude
         return latitude;
     }
 
-    /**
-     * Function to get longitude
-     * */
+
     public double getLongitude(){
         if(location != null){
             longitude = location.getLongitude();
         }
 
-        // return longitude
         return longitude;
     }
 
@@ -163,9 +151,6 @@ public class LocationManag extends Service implements LocationListener {
         return this.canGetLocation;
     }
 
-    /**
-     * Function to show settings alert dialog
-     * */
     public void showSettingsAlert(){
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
         alertDialog.setTitle("Настройка GPS");
