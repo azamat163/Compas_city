@@ -10,9 +10,9 @@ import java.io.Serializable;
 public class GeoDataModel {
 
 
-    public String title;
-    public Double dist;
-    public Integer image;
+    private String title;
+    private Double dist;
+    private Integer image;
 
     GeoDataModel(){
 

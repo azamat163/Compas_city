@@ -31,7 +31,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private String TAG = MainActivity.class.getSimpleName();
-    private String url = "https://ru.wikipedia.org/w/api.php?action=query&list=geosearch&gslimit=10&format=json&prop=coordinates|pageimages|pageterms&piprop=thumbnail&pithumbsize=144";
+    private String url = "https://ru.wikipedia.org/w/api.php?action=query&generator=geosearch&ggslimit=10&format=json&prop=coordinates|pageimages&colimit=50&pithumbsize=144";
     private ProgressDialog mProgresDialog;
     private GeoDataModel geo;
     private double latitude;
@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         mProgresDialog.setMessage("Информацию о вашем местоположении загружаю. Это может занять несколько минут...");
         mProgresDialog.show();
 
-        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url + "&" + "gscoord=" + latitude + "|" + longitude + "&" + "gsradius=" + radius, new Response.Listener<JSONObject>() {
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url + "&" + "ggscoord=" + latitude + "|" + longitude + "&" + "ggsradius=" + radius, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
@@ -138,13 +138,12 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void parseJSON(JSONObject json) throws JSONException {
-        // JSONObject value = json.getJSONObject("value");
         JSONObject tt = json.getJSONObject("query");
         JSONArray items = tt.getJSONArray("geosearch");
         JSONArray itemsorts = sortJsonArray(items);
-            geo = new GeoDataModel();
             GeoDataModels.clear();
             for (int i = 0; i < itemsorts.length(); i++) {
+                geo = new GeoDataModel();
                 JSONObject c = (JSONObject) itemsorts.get(i);
                 if (!c.isNull("title")) {
                     geo.setTitle(c.getString("title"));
@@ -156,12 +155,9 @@ public class MainActivity extends AppCompatActivity {
                     geo.setImage(previewsImages[j]);
                 }
 
-                GeoDataModels.add(i,geo);
+                GeoDataModels.add(geo);
                 Log.d(TAG, "title :" + geo.getTitle());
                 Log.d(TAG, "dist :" + geo.getDist());
-                //   Log.d(TAG,"image :" + geo.getImage());
-
-
             }
             rvAdapter.notifyDataSetChanged();
 
@@ -175,15 +171,15 @@ public class MainActivity extends AppCompatActivity {
         Collections.sort(jsons, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject lhs, JSONObject rhs) {
-                String lid = null;
+                Double lid = 0.0;
                 try {
-                    lid = lhs.getString("dist");
+                   lid = lhs.getDouble("dist");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                String rid = null;
+                Double rid = 0.0;
                 try {
-                    rid = rhs.getString("dist");
+                    rid = rhs.getDouble("dist");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

@@ -40,8 +40,8 @@ public class LocationManag extends Service implements LocationListener {
     double longitude;
 
 
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
-    private static final long MIN_TIME_BW_UPDATES = 0;
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 100;
+    private static final long MIN_TIME_BW_UPDATES = 1;
 
     protected android.location.LocationManager locationManager;
 
