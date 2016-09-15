@@ -40,6 +40,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -199,29 +200,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     private void parseJSON(JSONObject json) throws JSONException {
-        JSONObject tt = json.getJSONObject("query");
-        JSONArray items = tt.getJSONArray("geosearch");
-        JSONArray itemsorts = sortJsonArray(items);
+        JSONObject query = json.getJSONObject("query");
+        JSONObject pages = query.getJSONObject("pages");
+        Iterator<String> iterator = pages.keys();
         GeoDataModels.clear();
-        for (int i = 0; i < itemsorts.length(); i++) {
+        while (iterator.hasNext()){
             geo = new GeoDataModel();
-            JSONObject c = (JSONObject) itemsorts.get(i);
-            if (!c.isNull("title")) {
-                geo.setTitle(c.getString("title"));
-            }
-            if (!c.isNull("dist")) {
-                geo.setDist(c.getDouble("dist"));
-            }
-            for (int j = 0; j < previewsImages.length; j++){
-                geo.setImage(previewsImages[j]);
-            }
-
+            String currentkey = (String)iterator.next();
+            JSONObject currentvalue = pages.getJSONObject(currentkey);
+            geo.setTitle(currentvalue.getString("title"));
+            JSONObject thumbnail = currentvalue.getJSONObject("thumbnail");
+            //geo.setImage(thumbnail.getString("source"));
             GeoDataModels.add(geo);
             Log.d(TAG, "title :" + geo.getTitle());
-            Log.d(TAG, "dist :" + geo.getDist());
         }
         rvAdapter.notifyDataSetChanged();
-
     }
 
     public static JSONArray sortJsonArray(JSONArray array) throws JSONException {
