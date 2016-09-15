@@ -1,7 +1,17 @@
 package com.example.azamat.testaltarix;
 
+import android.*;
+import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,6 +27,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.appdatasearch.GetRecentContextCall;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,7 +43,7 @@ import java.util.Comparator;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private String TAG = MainActivity.class.getSimpleName();
     private String url = "https://ru.wikipedia.org/w/api.php?action=query&generator=geosearch&ggslimit=10&format=json&prop=coordinates|pageimages&colimit=50&pithumbsize=144";
@@ -39,6 +54,11 @@ public class MainActivity extends AppCompatActivity {
     private String radius = "10000";
     public  ArrayList<GeoDataModel> GeoDataModels;
     private CustomGeoListAdapter rvAdapter;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLocation;
+    private LocationListener mLocationListener;
+    private LocationRequest mLocationRequest;
+    private static final int PERMISSION_ACCESS_COARSE_LOCATION = 1;
     private int[] previewsImages =
             {       R.drawable.icon,
                     R.drawable.icon,
@@ -68,15 +88,17 @@ public class MainActivity extends AppCompatActivity {
         GeoDataModels = new ArrayList<>();
         rvAdapter = new CustomGeoListAdapter(GeoDataModels);
         rvv.setAdapter(rvAdapter);
-        LocationManag loc = new LocationManag(MainActivity.this);
-        if (loc.canGetLocation()) {
-            latitude = loc.latitude;
-            longitude = loc.longitude;
-            places();
-        } else {
-            loc.showSettingsAlert();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION },
+                    PERMISSION_ACCESS_COARSE_LOCATION);
         }
-
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
     }
 
 
@@ -102,8 +124,46 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
+        }
+    }
+
+    @Override
+    public void onStop(){
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            latitude = mLocation.getLatitude();
+            longitude = mLocation.getLongitude();
+            places();
+            Log.d(TAG,"latitude :" + latitude);
+            Log.d(TAG,"longitude :" + longitude);
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.i(TAG, "Can't connect to Google Play Services!");
+    }
+
     private void places() {
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        final RequestQueue requestQueue = Volley.newRequestQueue(this);
         mProgresDialog = new ProgressDialog(MainActivity.this);
         mProgresDialog.setMessage("Информацию о вашем местоположении загружаю. Это может занять несколько минут...");
         mProgresDialog.show();
@@ -116,7 +176,8 @@ public class MainActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                Log.d(TAG, "request :" + response.toString());
+                Log.d(TAG, "POST");
+                Log.d(TAG, response.toString());
                 mProgresDialog.hide();
             }
 
@@ -141,25 +202,25 @@ public class MainActivity extends AppCompatActivity {
         JSONObject tt = json.getJSONObject("query");
         JSONArray items = tt.getJSONArray("geosearch");
         JSONArray itemsorts = sortJsonArray(items);
-            GeoDataModels.clear();
-            for (int i = 0; i < itemsorts.length(); i++) {
-                geo = new GeoDataModel();
-                JSONObject c = (JSONObject) itemsorts.get(i);
-                if (!c.isNull("title")) {
-                    geo.setTitle(c.getString("title"));
-                }
-                if (!c.isNull("dist")) {
-                    geo.setDist(c.getDouble("dist"));
-                }
-                for (int j = 0; j < previewsImages.length; j++){
-                    geo.setImage(previewsImages[j]);
-                }
-
-                GeoDataModels.add(geo);
-                Log.d(TAG, "title :" + geo.getTitle());
-                Log.d(TAG, "dist :" + geo.getDist());
+        GeoDataModels.clear();
+        for (int i = 0; i < itemsorts.length(); i++) {
+            geo = new GeoDataModel();
+            JSONObject c = (JSONObject) itemsorts.get(i);
+            if (!c.isNull("title")) {
+                geo.setTitle(c.getString("title"));
             }
-            rvAdapter.notifyDataSetChanged();
+            if (!c.isNull("dist")) {
+                geo.setDist(c.getDouble("dist"));
+            }
+            for (int j = 0; j < previewsImages.length; j++){
+                geo.setImage(previewsImages[j]);
+            }
+
+            GeoDataModels.add(geo);
+            Log.d(TAG, "title :" + geo.getTitle());
+            Log.d(TAG, "dist :" + geo.getDist());
+        }
+        rvAdapter.notifyDataSetChanged();
 
     }
 
@@ -173,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
             public int compare(JSONObject lhs, JSONObject rhs) {
                 Double lid = 0.0;
                 try {
-                   lid = lhs.getDouble("dist");
+                    lid = lhs.getDouble("dist");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
