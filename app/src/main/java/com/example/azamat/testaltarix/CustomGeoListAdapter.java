@@ -40,7 +40,7 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
     public void onBindViewHolder(CustomGeoListAdapter.geosearchViewHolder holder, int i) {
         holder.title.setText(GeoDataModels.get(i).getTitle());
         holder.dist.setText(String.valueOf(GeoDataModels.get(i).getDist()));
-        holder.image.setImageResource(GeoDataModels.get(i).getImage());
+      //  holder.image.setImageResource(GeoDataModels.get(i).getImage());
     }
 
 
@@ -72,7 +72,7 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
             cv = (CardView)itemView.findViewById(R.id.cv);
             title = (TextView)itemView.findViewById(R.id.title);
             dist = (TextView)itemView.findViewById(R.id.dist);
-            image = (ImageView)itemView.findViewById(R.id.image);
+          //  image = (ImageView)itemView.findViewById(R.id.image);
         }
 
         @Override

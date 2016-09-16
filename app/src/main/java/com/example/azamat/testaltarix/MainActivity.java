@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -33,6 +34,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,7 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
     private String TAG = MainActivity.class.getSimpleName();
     private String url = "https://ru.wikipedia.org/w/api.php?action=query&generator=geosearch&ggslimit=10&format=json&prop=coordinates|pageimages&colimit=50&pithumbsize=144";
@@ -57,24 +59,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private CustomGeoListAdapter rvAdapter;
     private GoogleApiClient mGoogleApiClient;
     private Location mLocation;
-    private LocationListener mLocationListener;
     private LocationRequest mLocationRequest;
     private static final int PERMISSION_ACCESS_COARSE_LOCATION = 1;
-    private int[] previewsImages =
-            {       R.drawable.icon,
-                    R.drawable.icon,
-                    R.drawable.icon,
-                    R.drawable.icon,
-                    R.drawable.icon,
-                    R.drawable.icon,
-                    R.drawable.icon,
-                    R.drawable.icon,
-                    R.drawable.icon,
-                    R.drawable.icon,
-            };
-
-    private String title;
-    private String dist;
+    Boolean mRequestingLocationUpdates = false;
 
 
     @Override
@@ -89,17 +76,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         GeoDataModels = new ArrayList<>();
         rvAdapter = new CustomGeoListAdapter(GeoDataModels);
         rvv.setAdapter(rvAdapter);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION },
-                    PERMISSION_ACCESS_COARSE_LOCATION);
-        }
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-        }
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERMISSION_ACCESS_COARSE_LOCATION);
+            }
+            if (mGoogleApiClient == null) {
+                mGoogleApiClient = new GoogleApiClient.Builder(this)
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .addApi(LocationServices.API)
+                        .build();
+            }
     }
 
 
@@ -141,17 +129,57 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            latitude = mLocation.getLatitude();
-            longitude = mLocation.getLongitude();
-            places();
-            Log.d(TAG,"latitude :" + latitude);
-            Log.d(TAG,"longitude :" + longitude);
+    public void onConnected( Bundle bundle) {
+            if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)) {
+                mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                if (mLocation != null) {
+                    latitude = mLocation.getLatitude();
+                    longitude = mLocation.getLongitude();
+                  places();
+                   Log.d(TAG, "latitude :" + latitude);
+                   Log.d(TAG, "longitude :" + longitude);
+                }
+                if (mRequestingLocationUpdates){
+                   mLocationRequest = LocationRequest.create();
+                   mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                   mLocationRequest.setInterval(5000);
+                    mLocationRequest.setFastestInterval(3000);
+                    startLocationUpdates();
+               }
+            }
+    }
+
+    protected void startLocationUpdates() {
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    mGoogleApiClient, mLocationRequest, this);
         }
     }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
+            startLocationUpdates();
+        }
+    }
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
+        places();
+        Log.d(TAG, "latitude1 :" + latitude);
+        Log.d(TAG, "longitude1 :" + longitude);
+    }
+
+
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -210,9 +238,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             JSONObject currentvalue = pages.getJSONObject(currentkey);
             geo.setTitle(currentvalue.getString("title"));
             JSONObject thumbnail = currentvalue.getJSONObject("thumbnail");
-            //geo.setImage(thumbnail.getString("source"));
+            geo.setImage(thumbnail.getString("source"));
             GeoDataModels.add(geo);
             Log.d(TAG, "title :" + geo.getTitle());
+            Log.d(TAG, "ImageUrl :" + geo.getImage());
         }
         rvAdapter.notifyDataSetChanged();
     }
@@ -243,4 +272,5 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
         return new JSONArray(jsons);
     }
+
 }
