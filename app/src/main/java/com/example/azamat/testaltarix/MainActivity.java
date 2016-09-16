@@ -137,11 +137,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (mLocation != null) {
                     latitude = mLocation.getLatitude();
                     longitude = mLocation.getLongitude();
-                  places();
-                   Log.d(TAG, "latitude :" + latitude);
-                   Log.d(TAG, "longitude :" + longitude);
-                }
-                if (mRequestingLocationUpdates){
+                    places();
+                    Log.d(TAG, "latitude :" + latitude);
+                    Log.d(TAG, "longitude :" + longitude);
+                }else{
                    mLocationRequest = LocationRequest.create();
                    mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
                    mLocationRequest.setInterval(5000);
@@ -165,6 +164,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onResume() {
         super.onResume();
         if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
+            mLocationRequest = LocationRequest.create();
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            mLocationRequest.setInterval(5000);
+            mLocationRequest.setFastestInterval(3000);
             startLocationUpdates();
         }
     }
