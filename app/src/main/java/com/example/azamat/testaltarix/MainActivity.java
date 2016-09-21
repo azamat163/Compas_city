@@ -4,15 +4,21 @@ import android.*;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -33,6 +39,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
 
 
 import org.json.JSONArray;
@@ -59,9 +66,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private CustomGeoListAdapter rvAdapter;
     private GoogleApiClient mGoogleApiClient;
     private Location mLocation;
+    private LocationSettingsRequest.Builder builder;
     private LocationRequest mLocationRequest;
     private static final int PERMISSION_ACCESS_COARSE_LOCATION = 1;
     Boolean mRequestingLocationUpdates = false;
+    boolean isEnabled = false;
 
 
     @Override
@@ -76,17 +85,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         GeoDataModels = new ArrayList<>();
         rvAdapter = new CustomGeoListAdapter(GeoDataModels);
         rvv.setAdapter(rvAdapter);
-
+        if (Build.VERSION.SDK_INT >=23) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
-                        PERMISSION_ACCESS_COARSE_LOCATION);
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION) &&  ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
+                            PERMISSION_ACCESS_COARSE_LOCATION);
+                }
             }
+        }
+
             if (mGoogleApiClient == null) {
                 mGoogleApiClient = new GoogleApiClient.Builder(this)
                         .addConnectionCallbacks(this)
                         .addOnConnectionFailedListener(this)
                         .addApi(LocationServices.API)
                         .build();
+
             }
     }
 
@@ -113,7 +129,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     public void onStart(){
         super.onStart();
@@ -124,15 +139,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onStop(){
-        mGoogleApiClient.disconnect();
         super.onStop();
+        if(mGoogleApiClient.isConnected()){
+            mGoogleApiClient.disconnect();
+        }
     }
+
 
     @Override
     public void onConnected( Bundle bundle) {
+        if (Build.VERSION.SDK_INT >= 23) {
             if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED)) {
+                    == PackageManager.PERMISSION_GRANTED)) {
                 mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
                 if (mLocation != null) {
                     latitude = mLocation.getLatitude();
@@ -140,22 +159,44 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     places();
                     Log.d(TAG, "latitude :" + latitude);
                     Log.d(TAG, "longitude :" + longitude);
-                }else{
-                   mLocationRequest = LocationRequest.create();
-                   mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                   mLocationRequest.setInterval(5000);
-                    mLocationRequest.setFastestInterval(3000);
+                } else {
+                    mLocationRequest = LocationRequest.create();
+                    mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                    mLocationRequest.setInterval(10 * 1000);
+                    mLocationRequest.setFastestInterval(10000);
                     startLocationUpdates();
-               }
+                }
             }
+        } else {
+            mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (mLocation != null) {
+                latitude = mLocation.getLatitude();
+                longitude = mLocation.getLongitude();
+                Log.d(TAG, "latitude: " + latitude);
+                Log.d(TAG, "latitude: " + longitude);
+                places();
+            }else {
+                mLocationRequest = LocationRequest.create();
+                mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                mLocationRequest.setInterval(10 * 1000);
+                mLocationRequest.setFastestInterval(10000);
+                startLocationUpdates();
+            }
+        }
     }
 
+
     protected void startLocationUpdates() {
-        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED)) {
-            LocationServices.FusedLocationApi.requestLocationUpdates(
-                    mGoogleApiClient, mLocationRequest, this);
+        if (Build.VERSION.SDK_INT >= 23) {
+            if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED)) {
+                LocationServices.FusedLocationApi.requestLocationUpdates(
+                        mGoogleApiClient, mLocationRequest, this);
+            }
+        } else {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                    mLocationRequest, this);
         }
     }
 
@@ -166,8 +207,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
             mLocationRequest = LocationRequest.create();
             mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            mLocationRequest.setInterval(5000);
-            mLocationRequest.setFastestInterval(3000);
+            mLocationRequest.setInterval(10 * 1000);
+            mLocationRequest.setFastestInterval(10000);
             startLocationUpdates();
         }
     }
@@ -178,8 +219,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         latitude = location.getLatitude();
         longitude = location.getLongitude();
         places();
-        Log.d(TAG, "latitude1 :" + latitude);
-        Log.d(TAG, "longitude1 :" + longitude);
+        Log.d(TAG, "latitude :" + latitude);
+        Log.d(TAG, "longitude :" + longitude);
     }
 
 
@@ -189,10 +230,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.i(TAG, "Can't connect to Google Play Services!");
     }
+
 
     private void places() {
         final RequestQueue requestQueue = Volley.newRequestQueue(this);
