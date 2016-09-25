@@ -2,6 +2,7 @@ package com.example.azamat.testaltarix;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.Image;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 
@@ -19,11 +22,12 @@ import java.util.ArrayList;
 public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdapter.geosearchViewHolder> {
 
     private static ArrayList<GeoDataModel> GeoDataModels;
+    private Context mContext;
 
 
-
-    CustomGeoListAdapter(ArrayList<GeoDataModel> GeoDataModels){
+  public  CustomGeoListAdapter(Context mContext,ArrayList<GeoDataModel> GeoDataModels){
         this.GeoDataModels = GeoDataModels;
+        this.mContext = mContext;
     }
 
     @Override
@@ -38,9 +42,15 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
 
     @Override
     public void onBindViewHolder(CustomGeoListAdapter.geosearchViewHolder holder, int i) {
+        GeoDataModel geo = GeoDataModels.get(i);
         holder.title.setText(GeoDataModels.get(i).getTitle());
         holder.dist.setText(String.valueOf(GeoDataModels.get(i).getDist()));
-      //  holder.image.setImageResource(GeoDataModels.get(i).getImage());
+        Glide.with(mContext)
+                .load(geo.getImage())
+                .error(R.drawable.icon)
+                .override(80, 80)
+                .centerCrop()
+                .into(holder.image);
     }
 
 
@@ -72,7 +82,7 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
             cv = (CardView)itemView.findViewById(R.id.cv);
             title = (TextView)itemView.findViewById(R.id.title);
             dist = (TextView)itemView.findViewById(R.id.dist);
-          //  image = (ImageView)itemView.findViewById(R.id.image);
+            image = (ImageView)itemView.findViewById(R.id.image);
         }
 
         @Override

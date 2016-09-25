@@ -11,7 +11,7 @@ public class GeoDataModel {
 
 
     private String title;
-    private Double dist;
+    private int dist;
     private String image;
 
     GeoDataModel(){
@@ -22,7 +22,7 @@ public class GeoDataModel {
      this.title = title;
    }
 
-    public void setDist(double dist) {
+    public void setDist(int dist) {
        this.dist = dist;
    }
 
@@ -35,7 +35,7 @@ public class GeoDataModel {
         return title;
     }
 
-    public Double getDist(){
+    public Integer getDist(){
         return dist;
     }
 

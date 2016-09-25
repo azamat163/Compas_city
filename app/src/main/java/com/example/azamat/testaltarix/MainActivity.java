@@ -51,10 +51,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.lang.Math;
 
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
+    private static final int AvgRadius = 6371210;
+    private static final Double Rad = 0.0174533;
     private String TAG = MainActivity.class.getSimpleName();
     private String url = "https://ru.wikipedia.org/w/api.php?action=query&generator=geosearch&ggslimit=10&format=json&prop=coordinates|pageimages&colimit=50&pithumbsize=144";
     private ProgressDialog mProgresDialog;
@@ -70,7 +73,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private LocationRequest mLocationRequest;
     private static final int PERMISSION_ACCESS_COARSE_LOCATION = 1;
     Boolean mRequestingLocationUpdates = false;
-    boolean isEnabled = false;
+    private Double lat;
+    private Double lon;
+    private Double dist;
 
 
     @Override
@@ -83,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         rvv.setLayoutManager(llm);
         rvv.setItemAnimator(new DefaultItemAnimator());
         GeoDataModels = new ArrayList<>();
-        rvAdapter = new CustomGeoListAdapter(GeoDataModels);
+        rvAdapter = new CustomGeoListAdapter(this,GeoDataModels);
         rvv.setAdapter(rvAdapter);
         if (Build.VERSION.SDK_INT >=23) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -162,8 +167,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 } else {
                     mLocationRequest = LocationRequest.create();
                     mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                    mLocationRequest.setInterval(10 * 1000);
-                    mLocationRequest.setFastestInterval(10000);
+                    mLocationRequest.setInterval(10*1000);
+                    mLocationRequest.setFastestInterval(10*1000);
                     startLocationUpdates();
                 }
             }
@@ -178,8 +183,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }else {
                 mLocationRequest = LocationRequest.create();
                 mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                mLocationRequest.setInterval(10 * 1000);
-                mLocationRequest.setFastestInterval(10000);
+                mLocationRequest.setInterval(10*1000);
+                mLocationRequest.setFastestInterval(10*1000);
                 startLocationUpdates();
             }
         }
@@ -207,8 +212,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
             mLocationRequest = LocationRequest.create();
             mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            mLocationRequest.setInterval(10 * 1000);
-            mLocationRequest.setFastestInterval(10000);
+            mLocationRequest.setInterval(10*1000);
+            mLocationRequest.setFastestInterval(10*1000);
             startLocationUpdates();
         }
     }
@@ -235,6 +240,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.i(TAG, "Can't connect to Google Play Services!");
     }
+
 
 
     private void places() {
@@ -278,45 +284,45 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         JSONObject pages = query.getJSONObject("pages");
         Iterator<String> iterator = pages.keys();
         GeoDataModels.clear();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             geo = new GeoDataModel();
-            String currentkey = (String)iterator.next();
-            JSONObject currentvalue = pages.getJSONObject(currentkey);
-            geo.setTitle(currentvalue.getString("title"));
-            JSONObject thumbnail = currentvalue.getJSONObject("thumbnail");
-            geo.setImage(thumbnail.getString("source"));
-            GeoDataModels.add(geo);
-            Log.d(TAG, "title :" + geo.getTitle());
-            Log.d(TAG, "ImageUrl :" + geo.getImage());
-        }
-        rvAdapter.notifyDataSetChanged();
-    }
-
-    public static JSONArray sortJsonArray(JSONArray array) throws JSONException {
-        List<JSONObject> jsons = new ArrayList<JSONObject>();
-        for (int i = 0; i < array.length(); i++) {
-            jsons.add(array.getJSONObject(i));
-        }
-        Collections.sort(jsons, new Comparator<JSONObject>() {
-            @Override
-            public int compare(JSONObject lhs, JSONObject rhs) {
-                Double lid = 0.0;
-                try {
-                    lid = lhs.getDouble("dist");
-                } catch (JSONException e) {
-                    e.printStackTrace();
+            String currentkey = (String) iterator.next();
+            //JSONObject currentvalue = pages.getJSONObject(currentkey);
+            if (pages.get(currentkey) instanceof JSONObject) {
+                JSONObject currentvalue = pages.getJSONObject(currentkey);
+                geo.setTitle(currentvalue.getString("title"));
+                if (currentvalue.has("thumbnail")) {
+                    JSONObject thumbnail = currentvalue.getJSONObject("thumbnail");
+                    geo.setImage(thumbnail.getString("source"));
                 }
-                Double rid = 0.0;
-                try {
-                    rid = rhs.getDouble("dist");
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                JSONArray coord = currentvalue.getJSONArray("coordinates");
+                for (int i = 0 ; i < coord.length(); i ++){
+                    JSONObject tt = coord.getJSONObject(i);
+                    lat = tt.getDouble("lat");
+                    lon = tt.getDouble("lon");
+                    Log.d(TAG, "lat :" + lat);
+                    Log.d(TAG, "lon :" + lon);
+                    Double r = Math.acos(Math.sin(latitude*Rad)*Math.sin(lat*Rad) + Math.cos(latitude*Rad)*Math.cos(lat*Rad)*Math.cos(longitude*Rad - lon*Rad));
+                    dist = AvgRadius*r;
+                    int result =  (int) Math.round(dist);
+                    geo.setDist(result);
                 }
-
-                return lid.compareTo(rid);
+                GeoDataModels.add(geo);
+                Collections.sort(GeoDataModels, new Comparator<GeoDataModel>() {
+                    @Override
+                    public int compare(GeoDataModel o1, GeoDataModel o2) {
+                        return o1.getDist().compareTo(o2.getDist());
+                    }
+                });
+                Log.d(TAG, "title :" + geo.getTitle());
+                Log.d(TAG, "ImageUrl :" + geo.getImage());
+                Log.d(TAG, "dist :" + geo.getDist());
             }
-        });
-        return new JSONArray(jsons);
+          rvAdapter.notifyDataSetChanged();
+        }
     }
+
+
+
 
 }
