@@ -48,7 +48,7 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
         Glide.with(mContext)
                 .load(geo.getImage())
                 .error(R.drawable.icon)
-                .override(80, 80)
+                .override(60, 60)
                 .centerCrop()
                 .into(holder.image);
     }
