@@ -93,7 +93,7 @@ public class fragment_city extends Fragment implements GoogleApiClient.Connectio
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment fragment_favority.
+     * @return A new instance of fragment fragment_favourite.
      */
     // TODO: Rename and change types and number of parameters
     public static fragment_city newInstance(String param1, String param2) {

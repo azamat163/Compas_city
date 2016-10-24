@@ -14,14 +14,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.azamat.testaltarix.fragments.fragment_city;
-import com.example.azamat.testaltarix.fragments.fragment_favority;
+import com.example.azamat.testaltarix.fragments.fragment_favourite;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 
-public class MainActivity extends AppCompatActivity implements fragment_city.OnFragmentInteractionListener,fragment_favority.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements fragment_city.OnFragmentInteractionListener,fragment_favourite.OnFragmentInteractionListener {
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements fragment_city.OnF
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new fragment_city(), "Рядом");
-        adapter.addFragment(new fragment_favority(), "Избранные");
+        adapter.addFragment(new fragment_favourite(), "Избранные");
         viewPager.setAdapter(adapter);
     }
 

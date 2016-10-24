@@ -13,12 +13,12 @@ import com.example.azamat.testaltarix.R;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link fragment_favority.OnFragmentInteractionListener} interface
+ * {@link fragment_favourite.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link fragment_favority#newInstance} factory method to
+ * Use the {@link fragment_favourite#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class fragment_favority extends Fragment {
+public class fragment_favourite extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -30,7 +30,7 @@ public class fragment_favority extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public fragment_favority() {
+    public fragment_favourite() {
         // Required empty public constructor
     }
 
@@ -40,11 +40,11 @@ public class fragment_favority extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment fragment_favority.
+     * @return A new instance of fragment fragment_favourite.
      */
     // TODO: Rename and change types and number of parameters
-    public static fragment_favority newInstance(String param1, String param2) {
-        fragment_favority fragment = new fragment_favority();
+    public static fragment_favourite newInstance(String param1, String param2) {
+        fragment_favourite fragment = new fragment_favourite();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -65,7 +65,7 @@ public class fragment_favority extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_favority, container, false);
+        return inflater.inflate(R.layout.fragment_favourite, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
