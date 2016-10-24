@@ -44,7 +44,9 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
     public void onBindViewHolder(CustomGeoListAdapter.geosearchViewHolder holder, int i) {
         GeoDataModel geo = GeoDataModels.get(i);
         holder.title.setText(GeoDataModels.get(i).getTitle());
+        String plural = mContext.getResources().getQuantityString(R.plurals.plurals,GeoDataModels.get(i).getDist(),GeoDataModels.get(i).getDist());
         holder.dist.setText(String.valueOf(GeoDataModels.get(i).getDist()));
+        holder.dist.setText(plural);
         Glide.with(mContext)
                 .load(geo.getImage())
                 .error(R.drawable.icon)

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals
+        name="plurals">
+        <item quantity="zero">%d метров</item>
+        <item quantity="one">%d метр</item>
+        <item quantity="two">%d метра</item>
+        <item quantity="few">%d метра</item>
+        <item quantity="many">%d метров</item>
+        <item quantity="other">%d  метров</item>
+    </plurals>
+</resources>
