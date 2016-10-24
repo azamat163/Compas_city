@@ -14,7 +14,7 @@ public class GeoDataModel {
     private int dist;
     private String image;
 
-    GeoDataModel(){
+    public GeoDataModel(){
 
     }
 
