@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -31,6 +32,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.azamat.testaltarix.*;
 import com.example.azamat.testaltarix.R;
+import com.example.azamat.testaltarix.db.DatabaseHandler;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -81,6 +83,7 @@ public class fragment_city extends Fragment implements GoogleApiClient.Connectio
     private String mParam1;
     private String mParam2;
     private Button button;
+    private ImageButton imageButton;
     private OnFragmentInteractionListener mListener;
 
     public fragment_city() {
@@ -145,6 +148,7 @@ public class fragment_city extends Fragment implements GoogleApiClient.Connectio
                     .build();
 
         }
+
         return rootView;
     }
 

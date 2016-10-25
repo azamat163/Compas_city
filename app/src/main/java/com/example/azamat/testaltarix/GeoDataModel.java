@@ -9,13 +9,16 @@ import java.io.Serializable;
  */
 public class GeoDataModel {
 
-
+    private int id;
     private String title;
     private int dist;
     private String image;
 
     public GeoDataModel(){
 
+    }
+    public void setID(int id) {
+        this.id = id;
     }
 
     public void setTitle(String title) {
@@ -30,6 +33,10 @@ public class GeoDataModel {
        this.image = image;
    }
 
+
+    public Integer getID(){
+        return id;
+    }
 
     public String getTitle(){
         return title;
