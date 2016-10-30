@@ -2,7 +2,6 @@ package com.example.azamat.testaltarix;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.Image;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,34 +16,30 @@ import com.example.azamat.testaltarix.db.DatabaseHandler;
 
 import java.util.ArrayList;
 
-
 /**
- * Created by azamat on 31.08.16.
+ * Created by azamat on 30.10.16.
  */
-public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdapter.geosearchViewHolder> {
 
+public class FavouriteGeoListAdapter extends RecyclerView.Adapter<FavouriteGeoListAdapter.geofavouriteViewHolder> {
     private static ArrayList<GeoDataModel> GeoDataModels;
     private Context mContext;
     private DatabaseHandler db;
 
-
-  public  CustomGeoListAdapter(Context mContext,ArrayList<GeoDataModel> GeoDataModels){
+    public  FavouriteGeoListAdapter(Context mContext, ArrayList<GeoDataModel> GeoDataModels){
         this.GeoDataModels = GeoDataModels;
         this.mContext = mContext;
     }
-
     @Override
-    public geosearchViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public FavouriteGeoListAdapter.geofavouriteViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.
-                from(viewGroup.getContext()).
-                inflate(R.layout.activity_cardview, viewGroup, false);
-        geosearchViewHolder pvh = new geosearchViewHolder(v);
+                from(parent.getContext()).
+                inflate(R.layout.activity_cardview_favourite, parent, false);
+        FavouriteGeoListAdapter.geofavouriteViewHolder pvh = new FavouriteGeoListAdapter.geofavouriteViewHolder(v);
         return pvh;
     }
 
-
     @Override
-    public void onBindViewHolder(final CustomGeoListAdapter.geosearchViewHolder holder, final int i) {
+    public void onBindViewHolder(FavouriteGeoListAdapter.geofavouriteViewHolder holder, int i) {
         final GeoDataModel geo = GeoDataModels.get(i);
         holder.title.setText(GeoDataModels.get(i).getTitle());
         String plural = mContext.getResources().getQuantityString(R.plurals.plurals,GeoDataModels.get(i).getDist(),GeoDataModels.get(i).getDist());
@@ -56,16 +51,7 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
                 .override(60, 60)
                 .centerCrop()
                 .into(holder.image);
-        holder.imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                db = new DatabaseHandler(mContext);
-                db.addPlace(geo);
-                holder.imageButton.setBackgroundResource(R.drawable.star2);
-            }
-        });
     }
-
 
     @Override
     public int getItemCount() {
@@ -80,7 +66,7 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
         super.onAttachedToRecyclerView(recyclerView);
     }
 
-    public static  class geosearchViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static  class geofavouriteViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private CardView cv;
         private TextView title;
         private  TextView dist;
@@ -89,15 +75,15 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
         private ImageButton imageButton;
 
 
-        geosearchViewHolder(View itemView) {
+        geofavouriteViewHolder(View itemView) {
             super(itemView);
             context = itemView.getContext();
             itemView.setOnClickListener(this);
-            cv = (CardView)itemView.findViewById(R.id.cv);
-            title = (TextView)itemView.findViewById(R.id.title);
-            dist = (TextView)itemView.findViewById(R.id.dist);
-            image = (ImageView)itemView.findViewById(R.id.image);
-            imageButton = (ImageButton)itemView.findViewById(R.id.favourite);
+            cv = (CardView)itemView.findViewById(R.id.cv_fav);
+            title = (TextView)itemView.findViewById(R.id.title_fav);
+            dist = (TextView)itemView.findViewById(R.id.dist_fav);
+            image = (ImageView)itemView.findViewById(R.id.image_fav);
+            imageButton = (ImageButton)itemView.findViewById(R.id.favourite_fav);
         }
 
         @Override

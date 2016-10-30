@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
+import com.example.azamat.testaltarix.FavouriteGeoListAdapter;
 import com.example.azamat.testaltarix.GeoDataModel;
 
 import java.util.ArrayList;
@@ -16,14 +18,14 @@ import java.util.ArrayList;
  */
 
 public class DatabaseHandler extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "placesDB";
     private static final String TABLE_PLACE = "places_table";
     private static final String KEY_ID = "id";
     private static final String KEY_TITLE = "title";
     private static final String KEY_DIST = "dist";
     private static final String KEY_IMAGE = "image";
-
+    private FavouriteGeoListAdapter rvAdapter;
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -32,10 +34,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String CREATE_CITY_TABLE = "CREATE TABLE" + TABLE_PLACE + "("
-                + KEY_ID + "INTEGER PRIMARY KEY," + KEY_TITLE + "TEXT,"
-                + KEY_DIST + "INTEGER NOT NULL," + KEY_IMAGE + "TEXT"
-                + ")";
+        String CREATE_CITY_TABLE = "CREATE TABLE " + TABLE_PLACE + "("
+                + KEY_ID + " INTEGER PRIMARY KEY," + KEY_TITLE + " TEXT,"
+                + KEY_DIST + " INTEGER," + KEY_IMAGE + " TEXT"
+                + ");";
         db.execSQL(CREATE_CITY_TABLE);
     }
 
@@ -52,7 +54,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_TITLE,geo.getTitle());
         values.put(KEY_DIST,geo.getDist());
         values.put(KEY_IMAGE,geo.getImage());
-
+        Log.d("DB", "Inserting data");
         db.insert(TABLE_PLACE,null,values);
         db.close();
     }
@@ -71,6 +73,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 geo.setImage(cursor.getString(3));
 
                 geoList.add(geo);
+
             } while (cursor.moveToNext());
         }
         return geoList;

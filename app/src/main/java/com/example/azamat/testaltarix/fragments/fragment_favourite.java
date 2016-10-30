@@ -4,11 +4,21 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.azamat.testaltarix.CustomGeoListAdapter;
+import com.example.azamat.testaltarix.FavouriteGeoListAdapter;
+import com.example.azamat.testaltarix.GeoDataModel;
 import com.example.azamat.testaltarix.R;
+import com.example.azamat.testaltarix.db.DatabaseHandler;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -27,7 +37,7 @@ public class fragment_favourite extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
+    private FavouriteGeoListAdapter rvAdapter;
     private OnFragmentInteractionListener mListener;
 
     public fragment_favourite() {
@@ -64,8 +74,19 @@ public class fragment_favourite extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_favourite, container, false);
+        View rootView = inflater.inflate(com.example.azamat.testaltarix.R.layout.fragment_favourite, container, false);
+        RecyclerView rv_fav= (RecyclerView) rootView.findViewById(R.id.rv_fav);
+        rv_fav.setHasFixedSize(true);
+        LinearLayoutManager llm_fav = new LinearLayoutManager(getActivity());
+        rv_fav.setLayoutManager(llm_fav);
+        rv_fav.setItemAnimator(new DefaultItemAnimator());
+        DatabaseHandler db = new DatabaseHandler(getActivity());
+        ArrayList<GeoDataModel> geo = db.getAllGeoDataModel();
+        rvAdapter = new FavouriteGeoListAdapter(getActivity(),geo);
+        rv_fav.setAdapter(rvAdapter);
+        rvAdapter.notifyDataSetChanged();
+        return rootView;
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -91,6 +112,7 @@ public class fragment_favourite extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
 
     /**
      * This interface must be implemented by activities that contain this
