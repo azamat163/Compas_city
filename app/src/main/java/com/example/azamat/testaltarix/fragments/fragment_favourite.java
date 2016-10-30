@@ -1,8 +1,10 @@
 package com.example.azamat.testaltarix.fragments;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -19,6 +21,7 @@ import com.example.azamat.testaltarix.R;
 import com.example.azamat.testaltarix.db.DatabaseHandler;
 
 import java.util.ArrayList;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,6 +42,7 @@ public class fragment_favourite extends Fragment {
     private String mParam2;
     private FavouriteGeoListAdapter rvAdapter;
     private OnFragmentInteractionListener mListener;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     public fragment_favourite() {
         // Required empty public constructor
@@ -75,9 +79,23 @@ public class fragment_favourite extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(com.example.azamat.testaltarix.R.layout.fragment_favourite, container, false);
-        RecyclerView rv_fav= (RecyclerView) rootView.findViewById(R.id.rv_fav);
+        final RecyclerView rv_fav= (RecyclerView) rootView.findViewById(R.id.rv_fav);
         rv_fav.setHasFixedSize(true);
-        LinearLayoutManager llm_fav = new LinearLayoutManager(getActivity());
+        final LinearLayoutManager llm_fav = new LinearLayoutManager(getActivity());
+        swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setColorSchemeColors(Color.RED);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                                                    @Override
+                                                    public void onRefresh() {
+
+                                                                DatabaseHandler db = new DatabaseHandler(getActivity());
+                                                                ArrayList<GeoDataModel> geo = db.getAllGeoDataModel();
+                                                                rvAdapter = new FavouriteGeoListAdapter(getActivity(), geo);
+                                                                rv_fav.setAdapter(rvAdapter);
+                                                                swipeRefreshLayout.setRefreshing(false);
+                                                            }
+                                                });
+
         rv_fav.setLayoutManager(llm_fav);
         rv_fav.setItemAnimator(new DefaultItemAnimator());
         DatabaseHandler db = new DatabaseHandler(getActivity());
@@ -112,6 +130,9 @@ public class fragment_favourite extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
+
+
 
 
     /**

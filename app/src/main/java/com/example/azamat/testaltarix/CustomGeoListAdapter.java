@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.azamat.testaltarix.db.DatabaseHandler;
@@ -56,12 +57,27 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
                 .override(60, 60)
                 .centerCrop()
                 .into(holder.image);
+     //   db = new DatabaseHandler(mContext);
+      //  boolean r = db.findTitle(geo.getTitle());
+      //  if (r == true) {
+      //      holder.imageButton.setBackgroundResource(R.drawable.star2);
+      //  }
         holder.imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 db = new DatabaseHandler(mContext);
-                db.addPlace(geo);
-                holder.imageButton.setBackgroundResource(R.drawable.star2);
+                boolean r = db.findTitle(geo.getTitle());
+                if (r == true) {
+                    db.addPlace(geo);
+                    Toast.makeText(mContext,"Добавлено в избранные",Toast.LENGTH_LONG).show();
+                    holder.imageButton.setBackgroundResource(R.drawable.star2);
+
+                }else {
+                    db.deletePlace(geo);
+                    Toast.makeText(mContext, "Запись удалена со вкладки Избранные", Toast.LENGTH_LONG).show();
+                    holder.imageButton.setBackgroundResource(R.drawable.star1);
+                }
+
             }
         });
     }

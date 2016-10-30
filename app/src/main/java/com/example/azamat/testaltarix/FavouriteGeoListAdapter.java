@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.azamat.testaltarix.db.DatabaseHandler;
@@ -39,7 +40,7 @@ public class FavouriteGeoListAdapter extends RecyclerView.Adapter<FavouriteGeoLi
     }
 
     @Override
-    public void onBindViewHolder(FavouriteGeoListAdapter.geofavouriteViewHolder holder, int i) {
+    public void onBindViewHolder(final FavouriteGeoListAdapter.geofavouriteViewHolder holder, int i) {
         final GeoDataModel geo = GeoDataModels.get(i);
         holder.title.setText(GeoDataModels.get(i).getTitle());
         String plural = mContext.getResources().getQuantityString(R.plurals.plurals,GeoDataModels.get(i).getDist(),GeoDataModels.get(i).getDist());
@@ -51,6 +52,16 @@ public class FavouriteGeoListAdapter extends RecyclerView.Adapter<FavouriteGeoLi
                 .override(60, 60)
                 .centerCrop()
                 .into(holder.image);
+        holder.imageButton.setBackgroundResource(R.drawable.star2);
+        holder.imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                db = new DatabaseHandler(mContext);
+                db.deletePlace(geo);
+                holder.imageButton.setBackgroundResource(R.drawable.star1);
+                Toast.makeText(mContext,"Запись удалена",Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override

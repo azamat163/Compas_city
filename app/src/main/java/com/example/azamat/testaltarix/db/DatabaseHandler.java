@@ -48,20 +48,31 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
 
+    public boolean findTitle(String title) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_PLACE + " WHERE " + KEY_TITLE + "= '" + title + "'", null);
+        if (c.getCount()!=0) {
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
     public void addPlace(GeoDataModel geo) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(KEY_TITLE,geo.getTitle());
         values.put(KEY_DIST,geo.getDist());
         values.put(KEY_IMAGE,geo.getImage());
-        Log.d("DB", "Inserting data");
+        Log.d("DB", "Inserting data...");
         db.insert(TABLE_PLACE,null,values);
         db.close();
     }
 
     public ArrayList<GeoDataModel> getAllGeoDataModel() {
         ArrayList<GeoDataModel> geoList = new ArrayList<GeoDataModel>();
-        String selectAll = "SELECT * FROM " + TABLE_PLACE;
+        String selectAll = "SELECT * FROM " + TABLE_PLACE + " ORDER BY " + KEY_DIST + " ASC";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectAll,null);
         if (cursor.moveToFirst()) {
@@ -81,8 +92,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public void deletePlace(GeoDataModel geo) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_PLACE, KEY_ID + "= ?",
-                new String[] {String.valueOf(geo.getID())});
+        db.delete(TABLE_PLACE, KEY_TITLE + "= ?",new String[]{geo.getTitle()});
+        Log.d("DB", "Deleting data...");
         db.close();
     }
 
