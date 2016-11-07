@@ -57,11 +57,6 @@ public class CustomGeoListAdapter extends RecyclerView.Adapter<CustomGeoListAdap
                 .override(60, 60)
                 .centerCrop()
                 .into(holder.image);
-     //   db = new DatabaseHandler(mContext);
-      //  boolean r = db.findTitle(geo.getTitle());
-      //  if (r == true) {
-      //      holder.imageButton.setBackgroundResource(R.drawable.star2);
-      //  }
         holder.imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -58,7 +58,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="right"
-                    android:src="@drawable/star"
+                    android:src="@drawable/star2"
                     android:background="#00ffffff"
                     />
 
